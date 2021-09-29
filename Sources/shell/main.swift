@@ -27,6 +27,8 @@ import LineNoise
 import Troll
 
 class Troll {
+    private let usage = "usage: troll [<script> [ID1=N1] [ID2=N2] ... [IDn=Nn]]"
+
     private lazy var ln = LineNoise()
     private let interpreter = Interpreter()
 
@@ -45,7 +47,6 @@ class Troll {
     // Using the scanner is overkill, although it does allow us to
     // easily make sure identifiers have proper format, parse integers, etc.
     private func parse(args: [String]) {
-        let usage = "usage: troll [<script> [ID1=N1] [ID2=N2] ... [IDn=Nn]]"
         let scanner = Scanner(args.joined(separator: " "))
 
         guard case .success(let tokens) = scanner.scan() else {
@@ -60,21 +61,38 @@ class Troll {
         case .failure:
             print(usage)
             exit(64)
-            break
         case .success(let symbols):
             interpreter.push(symbols)
         }
     }
 
     // Exit codes from sysexits.h; may be mis-interpreting some of them :)
-    func run(file: String, args: [String]) {
-        if args.count > 0 {
-            parse(args: args)
+    func run(args: [String]) {
+        var filenameIndex = 1
+        let repetitions: Int
+
+        if let firstAsInt = Int(args[0]) {
+            repetitions = firstAsInt
+        } else {
+            filenameIndex = 0
+            repetitions = 1
+        }
+
+        if filenameIndex == 1 && args.count < 2 {
+            print(usage)
+            exit(64)
+        }
+        
+        let filename = args[filenameIndex]
+
+        // TODO: is this correct?
+        if args.count > filenameIndex + 1 {
+            parse(args: Array(args[(filenameIndex + 1)...]))
         }
 
         do {
-            let source = try String(contentsOfFile: file, encoding: .utf8)
-            run(source)
+            let source = try String(contentsOfFile: filename, encoding: .utf8)
+            run(source, repetitions: repetitions)
 
             if hadError {
                 exit(64)
@@ -129,7 +147,7 @@ class Troll {
         }
     }
 
-    private func run(_ source: String) {
+    private func run(_ source: String, repetitions: Int = 1) {
         let scanner = Scanner(source)
         guard case let .success(tokens) = scanner.scan() else {
             hadError = true
@@ -145,12 +163,16 @@ class Troll {
         if showTree { print("Tree: \(parsedData.expression)") }
 
         interpreter.add(parsedData.functions)
-        guard case let .success(value) = interpreter.evaluate(parsedData.expression) else {
-            hadRuntimeError = true
-            return
-        }
 
-        print(value)
+        (1...repetitions).forEach { _ in
+            guard case let .success(value) = interpreter.evaluate(parsedData.expression) else {
+                hadRuntimeError = true
+                // TODO: should quit w/appropriate exit code
+                return
+            }
+            
+            print(value)
+        }
     }
 
     private func unsetVar(_ line: String) {
@@ -228,5 +250,5 @@ let argCount = CommandLine.arguments.count
 if argCount == 1 {
     troll.repl()
 } else {
-    troll.run(file: CommandLine.arguments[1], args: Array(CommandLine.arguments[2...]))
+    troll.run(args: Array(CommandLine.arguments[1...]))
 }
