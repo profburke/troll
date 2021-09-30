@@ -94,7 +94,6 @@ class Troll {
         
         let filename = args[filenameIndex]
 
-        // TODO: is this correct?
         if args.count > filenameIndex + 1 {
             parse(args: Array(args[(filenameIndex + 1)...]))
         }
