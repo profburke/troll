@@ -27,7 +27,7 @@ import LineNoise
 import Troll
 
 class Troll {
-    private let usage = "usage: troll [<script> [ID1=N1] [ID2=N2] ... [IDn=Nn]]"
+    private let usage = "usage: troll [[N] <script> [ID1=N1] [ID2=N2] ... [IDn=Nn]]"
 
     private lazy var ln = LineNoise()
     private let interpreter = Interpreter()
@@ -72,6 +72,10 @@ class Troll {
         let repetitions: Int
 
         if let firstAsInt = Int(args[0]) {
+            if firstAsInt < 1 {
+                print(usage)
+                exit(64)
+            }
             repetitions = firstAsInt
         } else {
             filenameIndex = 0
