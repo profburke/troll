@@ -21,6 +21,7 @@
 
 import func Darwin.exit
 import func Darwin.fputs
+import func Darwin.isatty
 import var Darwin.stderr
 import Foundation
 import LineNoise
@@ -37,6 +38,10 @@ class Troll {
     private var hadRuntimeError = false
     private var showTokens = false
     private var showTree = false
+
+    public var isInteractive: Bool {
+        return isatty(FileHandle.standardInput.fileDescriptor) == 1
+    }
 
     private var historyfile: String {
         // Not sure if this works for Linux. Ought to use File URLs, but linenoise-swift
@@ -151,7 +156,7 @@ class Troll {
         }
     }
 
-    private func run(_ source: String, repetitions: Int = 1) {
+    func run(_ source: String, repetitions: Int = 1) {
         let scanner = Scanner(source)
         guard case let .success(tokens) = scanner.scan() else {
             hadError = true
@@ -252,7 +257,17 @@ let troll = Troll()
 let argCount = CommandLine.arguments.count
 
 if argCount == 1 {
-    troll.repl()
+    if troll.isInteractive {
+        troll.repl()
+    } else {
+        guard let source
+        = String(bytes: FileHandle.standardInput.availableData, encoding: .utf8) else {
+            print("Error reading redirected input.")
+            exit(64)
+        }
+
+        troll.run(source)
+    }
 } else {
     troll.run(args: Array(CommandLine.arguments[1...]))
 }
