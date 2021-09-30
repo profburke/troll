@@ -27,6 +27,10 @@ import Foundation
 import LineNoise
 import Troll
 
+var isInteractive: Bool {
+    return isatty(FileHandle.standardInput.fileDescriptor) == 1
+}
+
 class Troll {
     private let usage = "usage: troll [[N] <script> [ID1=N1] [ID2=N2] ... [IDn=Nn]]"
 
@@ -38,10 +42,6 @@ class Troll {
     private var hadRuntimeError = false
     private var showTokens = false
     private var showTree = false
-
-    public var isInteractive: Bool {
-        return isatty(FileHandle.standardInput.fileDescriptor) == 1
-    }
 
     private var historyfile: String {
         // Not sure if this works for Linux. Ought to use File URLs, but linenoise-swift
@@ -257,7 +257,7 @@ let troll = Troll()
 let argCount = CommandLine.arguments.count
 
 if argCount == 1 {
-    if troll.isInteractive {
+    if isInteractive {
         troll.repl()
     } else {
         guard let source
