@@ -21,13 +21,18 @@
 
 import func Darwin.exit
 import func Darwin.fputs
+import func Darwin.isatty
 import var Darwin.stderr
 import Foundation
 import LineNoise
 import Troll
 
+var isInteractive: Bool {
+    return isatty(FileHandle.standardInput.fileDescriptor) == 1
+}
+
 class Troll {
-    private let usage = "usage: troll [<script> [ID1=N1] [ID2=N2] ... [IDn=Nn]]"
+    private let usage = "usage: troll [[N] <script> [ID1=N1] [ID2=N2] ... [IDn=Nn]]"
 
     private lazy var ln = LineNoise()
     private let interpreter = Interpreter()
@@ -72,6 +77,10 @@ class Troll {
         let repetitions: Int
 
         if let firstAsInt = Int(args[0]) {
+            if firstAsInt < 1 {
+                print(usage)
+                exit(64)
+            }
             repetitions = firstAsInt
         } else {
             filenameIndex = 0
@@ -85,7 +94,6 @@ class Troll {
         
         let filename = args[filenameIndex]
 
-        // TODO: is this correct?
         if args.count > filenameIndex + 1 {
             parse(args: Array(args[(filenameIndex + 1)...]))
         }
@@ -147,7 +155,7 @@ class Troll {
         }
     }
 
-    private func run(_ source: String, repetitions: Int = 1) {
+    func run(_ source: String, repetitions: Int = 1) {
         let scanner = Scanner(source)
         guard case let .success(tokens) = scanner.scan() else {
             hadError = true
@@ -248,7 +256,17 @@ let troll = Troll()
 let argCount = CommandLine.arguments.count
 
 if argCount == 1 {
-    troll.repl()
+    if isInteractive {
+        troll.repl()
+    } else {
+        guard let source
+        = String(bytes: FileHandle.standardInput.availableData, encoding: .utf8) else {
+            print("Error reading redirected input.")
+            exit(64)
+        }
+
+        troll.run(source)
+    }
 } else {
     troll.run(args: Array(CommandLine.arguments[1...]))
 }
