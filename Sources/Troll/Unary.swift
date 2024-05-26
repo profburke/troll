@@ -48,10 +48,10 @@ extension Unary {
             return try evaluateDeferOperand(value, reportError: interpreter.error)
         case .double:
             return try evaluateDoubleOperand(value, reportError: interpreter.error)
-        case .pair:
-            return try evaluatePairOperand(value, reportError: interpreter.error)
         case .singleton:
             return try evaluateSingletonOperand(value, reportError: interpreter.error)
+        case .tuple:
+            return try evaluateTupleOperand(value, reportError: interpreter.error)
         }
     }
     
@@ -144,22 +144,6 @@ extension Unary {
         }
     }
     
-    private func evaluatePairOperand(_ value: Value, reportError: ErrorFunction) throws -> Value {
-        guard case let .pair(first, second) = value else {
-            reportError(op, "Operand must be a pair.")
-            throw RuntimeError.needsPair
-        }
-        
-        switch op.type {
-        case .first:
-            return first
-        case .second:
-            return second
-        default:
-            internalError(token: op)
-        }
-    }
-    
     private func evaluateSingletonOperand(_ value: Value, reportError: ErrorFunction) throws -> Value {
         guard let r = value.integer else {
             reportError(op, "Operand must be a single integer.")
@@ -185,6 +169,23 @@ extension Unary {
             return .collection([-1 * r])
         case .sgn:
             return .collection([r.signum()])
+        default:
+            internalError(token: op)
+        }
+    }
+
+    private func evaluateTupleOperand(_ value: Value, reportError: ErrorFunction) throws -> Value {
+        guard case let .tuple(expressions) = value else {
+            reportError(op, "Operand must be a tuple.")
+            throw RuntimeError.needsTuple
+        }
+
+        switch op.type {
+        case .first:
+            return expressions[0]
+        case .second:
+            // TODO: check that expressions.count > 1
+            return expressions[1]
         default:
             internalError(token: op)
         }

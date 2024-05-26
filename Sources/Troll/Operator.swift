@@ -36,6 +36,6 @@ public enum UnaryOperandSchema {
     case collection
     case deferOperand
     case double
-    case pair
     case singleton
+    case tuple
 }

@@ -330,10 +330,11 @@ public class Parser {
             return Unary(op: op, right: right, operandSchema: schema)
         }
 
+        // TODO: add .third ... .ninth ??? operators ???
         if match(.first, .second) {
             let op = previous()
             let right = try precedence9()
-            return Unary(op: op, right: right, operandSchema: .pair)
+            return Unary(op: op, right: right, operandSchema: .tuple)
         }
         
         if match(.least, .largest) {
@@ -456,6 +457,8 @@ public class Parser {
             return Group(expr: expr)
         }
 
+        // TODO: can we combine next two sections? (conditional on .lbrace, .lbrack?)
+        // TODO: error messages for no comma following expr?
 
         if match(.lbrace) {
             var exprs: [Expr] = []
@@ -473,12 +476,18 @@ public class Parser {
         }
 
         if match(.lbrack) {
-            let f = try expression()
-            try consume(.comma, message: "Expect ',' after first expression of pair.")
-            let s = try expression()
-            try consume(.rbrack, message: "Expect '}' after second expression of pair.")
+            var exprs: [Expr] = []
 
-            return Pair(first: f, second: s)
+            if peek().type != .rbrack {
+                repeat {
+                    let expr = try expression()
+                    exprs.append(expr)
+                } while match(.comma);
+            }
+
+            try consume(.rbrack, message: "Expect ']' after tuple.")
+
+            return Tuple(expressions: exprs)
         }
 
         error(message: "Unexpected characters when parsing literal expression.")

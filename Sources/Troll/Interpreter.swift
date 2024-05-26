@@ -31,10 +31,10 @@ public enum RuntimeError: Error {
     case invalidBinaryOperator
     case invalidUnaryOperator
     case needsIntCollection
-    case needsPair
     case needsReal
     case needsSingleton
     case needsString
+    case needsTuple
     case nonCollectionValue
     case unknownFunction
     case unknownVariable

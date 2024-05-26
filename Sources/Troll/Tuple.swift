@@ -1,5 +1,5 @@
 //
-//  Pair.swift
+//  Tuple.swift
 //  Troll
 //
 // Copyright (c) 2021 BlueDino Software (https://bluedino.net)
@@ -25,25 +25,22 @@
 
 import Foundation
 
-public class Pair: Expr {
-    public let first: Expr
-    public let second: Expr
+public class Tuple: Expr {
+    public let expressions: [Expr]
 
-    public init(first: Expr, second: Expr) {
-        self.first = first
-        self.second = second
+    // TODO: do we allow empty tuples?
+    public init(expressions: [Expr]) {
+        self.expressions = expressions
     }
 
     public func evaluate(interpreter: Interpreter) throws -> Value {
-        let f = try first.evaluate(interpreter: interpreter)
-        let s = try second.evaluate(interpreter: interpreter)
-
-        return .pair(f, s)
+        let results = try expressions.map { try $0.evaluate(interpreter: interpreter) }
+        return .tuple(results)
     }
 }
 
-extension Pair: CustomStringConvertible {
+extension Tuple: CustomStringConvertible {
     public var description: String {
-        return "[ \(first), \(second) ]"
+        return "[\(expressions.map { "\($0)" }.joined(separator: ","))]"
     }
 }

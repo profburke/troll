@@ -26,7 +26,7 @@
 public enum Value {
     case collection([Int])
     case double(Double)
-    indirect case pair(Value, Value)
+    indirect case tuple([Value])
     case string(String)
 
     // Not sure that these computed variables actually simplify the code...
@@ -84,10 +84,10 @@ extension Value: Equatable {
         case (.double(let left), .double(let right)):
             // should we check using an epsilon?
             return left == right
-        case (.pair(let leftFirst, let leftSecond), .pair(let rightFirst, let rightSecond)):
-            return leftFirst == rightFirst && leftSecond == rightSecond
         case (.string(let left), .string(let right)):
             return left == right
+        case (.tuple(let leftExpressions), .tuple(let rightExpressions)):
+            return leftExpressions == rightExpressions
         default:
             return false
         }
@@ -102,8 +102,8 @@ extension Value: CustomStringConvertible {
                 : ints.sorted().map { "\($0)" }.joined(separator: " ")
         case .double(let d):
             return "?\(d)"
-        case .pair(let first, let second):
-            return "[ \(first), \(second) ]"
+        case .tuple(let ints):
+            return "[ \(ints.map { "\($0)" }.joined(separator: ", ")) ]"
         case .string(let text):
             return text
         }
