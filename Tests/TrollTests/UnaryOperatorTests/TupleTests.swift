@@ -1,5 +1,5 @@
 //
-//  PairTests.swift
+//  TupleTests.swift
 //  TrollTests
 //
 // Copyright (c) 2021 BlueDino Software (https://bluedino.net)
@@ -26,8 +26,8 @@
 import Troll
 import XCTest
 
-final class PairTests: XCTestCase {
-    func testShouldFailIfOperandNotPair() {
+final class TupleTests: XCTestCase {
+    func testShouldFailIfOperandNotTuple() {
         guard let expr = buildAST(for: "%1 {1, 2, 3}") else {
             return
         }
@@ -36,7 +36,7 @@ final class PairTests: XCTestCase {
             XCTFail("Expected `evaluate` to fail.")
             return
         }
-        XCTAssertEqual(reason, .needsPair)
+        XCTAssertEqual(reason, .needsTuple)
     }
     
     func testDeterministicOperators() {
