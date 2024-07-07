@@ -32,7 +32,7 @@ final class StatementTests: XCTestCase {
             TestCase("if {1, 2, 3} then 4 else 5", .collection([4])),
             TestCase("if {} then 6 else 7", .collection([7])),
             TestCase("if {8} then \"some\" else [9, 10]", .string("some")),
-            TestCase("if {} then \"thing\" else [11, 12]", .pair(.collection([11]), .collection([12]))),
+            TestCase("if {} then \"thing\" else [11, 12]", .tuple([.collection([11]), .collection([12])])),
         ]
         .forEach { testCase in
             check(testCase)

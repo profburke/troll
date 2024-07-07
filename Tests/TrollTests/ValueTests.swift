@@ -39,7 +39,7 @@ final class ValueTests: XCTestCase {
             TestCase(value: .collection([]), expected: false),
             TestCase(value: .string("this won't work"), expected: false),
             TestCase(value: .double(0.4), expected: false),
-            TestCase(value: .pair(.collection([1]), .collection([2, 3])), expected: false),
+            TestCase(value: .tuple([.collection([1]), .collection([2, 3])]), expected: false),
         ]
         .forEach { testCase in
             XCTAssertEqual(testCase.value.isTruthy, testCase.expected)
