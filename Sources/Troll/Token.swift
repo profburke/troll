@@ -25,7 +25,7 @@
 
 import Foundation
 
-public enum TokenType {
+public enum TokenType: CaseIterable {
     // Single-character tokens
     case die
     case zeroDie

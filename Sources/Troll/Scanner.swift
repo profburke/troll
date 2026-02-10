@@ -306,4 +306,3 @@ extension Character {
         return self.isASCII && self.isNumber
     }
 }
-
