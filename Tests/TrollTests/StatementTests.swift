@@ -42,6 +42,8 @@ final class StatementTests: XCTestCase {
     func testForeachStatement() {
         [
             TestCase("foreach x in {1, 2, 3} do x*x", .collection([1, 4, 9])),
+            TestCase("foreach x in {} do x", .collection([])),
+            TestCase("foreach x in {5} do x * 2", .collection([10])),
         ]
         .forEach { testCase in
             check(testCase)
