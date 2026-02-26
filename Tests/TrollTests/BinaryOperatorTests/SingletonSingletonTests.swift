@@ -105,6 +105,24 @@ final class SingletonSingletonTests: XCTestCase {
         }
     }
 
+    func testDivisionByZero() {
+        guard let expr = buildAST(for: "{1} / {0}") else { return }
+        guard case .failure(let reason) = evaluate(expr) else {
+            XCTFail("Expected `evaluate` to fail on division by zero.")
+            return
+        }
+        XCTAssertEqual(reason, .invalidOperand)
+    }
+
+    func testModuloByZero() {
+        guard let expr = buildAST(for: "{5} mod {0}") else { return }
+        guard case .failure(let reason) = evaluate(expr) else {
+            XCTFail("Expected `evaluate` to fail on modulo by zero.")
+            return
+        }
+        XCTAssertEqual(reason, .invalidOperand)
+    }
+
     func testDeterministicOperators() {
         [
             TestCase("{1} + {3}", .collection([4])),
