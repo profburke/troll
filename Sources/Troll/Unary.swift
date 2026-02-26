@@ -182,9 +182,16 @@ extension Unary {
 
         switch op.type {
         case .first:
+            guard expressions.count >= 1 else {
+                reportError(op, "Tuple has no first element.")
+                throw RuntimeError.invalidOperand
+            }
             return expressions[0]
         case .second:
-            // TODO: check that expressions.count > 1
+            guard expressions.count >= 2 else {
+                reportError(op, "Tuple has no second element.")
+                throw RuntimeError.invalidOperand
+            }
             return expressions[1]
         default:
             internalError(token: op)
