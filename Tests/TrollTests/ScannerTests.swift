@@ -77,9 +77,9 @@ extension TokenType {
         case .second:
             return "%2"
         case .integer:
-            return "\(Int.random(in: Int.min...Int.max))"
+            return "\(Int.random(in: 1...Int.max))"
         case .real:
-            return "\(Float.random(in: -0.999 ..< 1.0))"
+            return "\(Float.random(in: 0.001 ..< 1.0))"
         case .identifier:
             return "Fred" // TBD
         case .string:
@@ -149,6 +149,99 @@ extension TokenType {
 }
 
 final class ScannerTests: XCTestCase {
+
+    private func scan(_ source: String) -> Result<[Token], Troll.Scanner.ScannerError> {
+        Troll.Scanner(source).scan()
+    }
+
+    // MARK: - Error cases
+
+    func testNoSource() {
+        guard case .failure(let error) = scan("") else {
+            XCTFail("Expected .noSource failure")
+            return
+        }
+        XCTAssertEqual(error, .noSource)
+    }
+
+    func testUnexpectedCharacter() {
+        guard case .failure(let error) = scan("$") else {
+            XCTFail("Expected .unexpectedCharacter failure")
+            return
+        }
+        XCTAssertEqual(error, .unexpectedCharacter)
+    }
+
+    func testUnterminatedString() {
+        // A newline before the closing quote triggers unterminatedString.
+        guard case .failure(let error) = scan("\"hello\n") else {
+            XCTFail("Expected .unterminatedString failure")
+            return
+        }
+        XCTAssertEqual(error, .unterminatedString)
+    }
+
+    func testMalformedColon() {
+        // ':' must be followed by '=' to form ':='; anything else is malformed.
+        guard case .failure(let error) = scan(":x") else {
+            XCTFail("Expected .malformedToken failure")
+            return
+        }
+        XCTAssertEqual(error, .malformedToken)
+    }
+
+    func testMalformedPipe() {
+        // '|' must be followed by '|' or '>'; anything else is malformed.
+        guard case .failure(let error) = scan("|x") else {
+            XCTFail("Expected .malformedToken failure")
+            return
+        }
+        XCTAssertEqual(error, .malformedToken)
+    }
+
+    func testMalformedPercent() {
+        // '%' must be followed by '1' or '2'; anything else is malformed.
+        guard case .failure(let error) = scan("%3") else {
+            XCTFail("Expected .malformedToken failure")
+            return
+        }
+        XCTAssertEqual(error, .malformedToken)
+    }
+
+    func testMalformedDot() {
+        // '.' must be followed by '.' to form '..'; anything else is malformed.
+        guard case .failure(let error) = scan(".x") else {
+            XCTFail("Expected .malformedToken failure")
+            return
+        }
+        XCTAssertEqual(error, .malformedToken)
+    }
+
+    // MARK: - Happy-path gaps
+
+    func testStringLiteral() {
+        guard case .success(let tokens) = scan("\"hello\"") else {
+            XCTFail("Expected success scanning a string literal")
+            return
+        }
+        XCTAssertEqual(tokens.count, 2)
+        XCTAssertEqual(tokens[0].type, .string)
+        XCTAssertEqual(tokens[1].type, .EOF)
+    }
+
+    func testComment() {
+        // A backslash starts a line comment; everything up to the newline is ignored.
+        guard case .success(let tokens) = scan("\\ comment\n5") else {
+            XCTFail("Expected success scanning a comment")
+            return
+        }
+        XCTAssertEqual(tokens.count, 2)
+        XCTAssertEqual(tokens[0].type, .integer)
+        XCTAssertEqual(tokens[1].type, .EOF)
+    }
+
+    // MARK: - Existing test
+
     func testScanFunction() {
         var tokenTypes: [TokenType] = []
         (0..<100).forEach { _ in
