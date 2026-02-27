@@ -27,6 +27,27 @@ import Troll
 import XCTest
 
 final class ValueTests: XCTestCase {
+    func testIsTruthyEdgeCases() {
+        // Zero is truthy — truthiness is non-emptiness, not non-zero
+        XCTAssertTrue(Value.collection([0]).isTruthy)
+        XCTAssertFalse(Value.collection([0]).isFalsey)
+        // Single negative element is truthy
+        XCTAssertTrue(Value.collection([-5]).isTruthy)
+        // Large collection is truthy
+        XCTAssertTrue(Value.collection(Array(1...100)).isTruthy)
+    }
+
+    func testCollectionEqualityIsOrderIndependent() {
+        XCTAssertEqual(Value.collection([3, 1, 2]), Value.collection([1, 2, 3]))
+        XCTAssertNotEqual(Value.collection([1, 2]), Value.collection([1, 2, 3]))
+    }
+
+    func testIntegerAccessor() {
+        XCTAssertEqual(Value.collection([42]).integer, 42)
+        XCTAssertNil(Value.collection([1, 2]).integer)
+        XCTAssertNil(Value.collection([]).integer)
+    }
+
     func testIsTruthyAndIsFalsey() {
         struct TestCase {
             let value: Value

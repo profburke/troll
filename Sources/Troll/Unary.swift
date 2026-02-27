@@ -131,7 +131,7 @@ extension Unary {
     }
 
     private func evaluateDoubleOperand(_ value: Value, reportError: ErrorFunction) throws -> Value {
-        guard let r = value.double, r > 0.0 else {
+        guard let r = value.double, 0.0 < r, r < 1.0 else {
             reportError(op, "Probabilistic operator requires a real number between 0 and 1 for its operand.")
             throw RuntimeError.needsReal
         }
