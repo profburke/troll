@@ -51,7 +51,27 @@ final class CollectionSingletonTests: XCTestCase {
         XCTAssertEqual(reason, .needsSingleton)
     }
 
-    // TODO: need to verify that the selection takes place w/out replacement.
+    func testPickWithoutReplacement() {
+        // Pick 2 from 3 distinct elements. With replacement, a duplicate would
+        // appear ~1/3 of runs; after 100 iterations the chance of never seeing
+        // one is negligible, so any duplicate is a strong signal of a bug.
+        guard let expr = buildAST(for: "{1, 2, 3} pick 2") else { return }
+
+        for _ in 0..<100 {
+            switch evaluate(expr) {
+            case .failure(let err):
+                XCTFail("pick failed unexpectedly: \(err)")
+            case .success(let value):
+                guard case .collection(let ints) = value else {
+                    XCTFail("pick did not return a collection")
+                    return
+                }
+                XCTAssertEqual(ints.count, Set(ints).count,
+                               "pick returned duplicate elements, suggesting with-replacement behavior")
+            }
+        }
+    }
+
     func testNondeterministicOperators() {
         [
             (expr: "{1, 2, 3, 4} pick 2", expectedLength: 2),

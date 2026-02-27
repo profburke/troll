@@ -131,7 +131,7 @@ extension Unary {
     }
 
     private func evaluateDoubleOperand(_ value: Value, reportError: ErrorFunction) throws -> Value {
-        guard let r = value.double, r > 0.0 else {
+        guard let r = value.double, 0.0 < r, r < 1.0 else {
             reportError(op, "Probabilistic operator requires a real number between 0 and 1 for its operand.")
             throw RuntimeError.needsReal
         }
@@ -182,9 +182,16 @@ extension Unary {
 
         switch op.type {
         case .first:
+            guard expressions.count >= 1 else {
+                reportError(op, "Tuple has no first element.")
+                throw RuntimeError.invalidOperand
+            }
             return expressions[0]
         case .second:
-            // TODO: check that expressions.count > 1
+            guard expressions.count >= 2 else {
+                reportError(op, "Tuple has no second element.")
+                throw RuntimeError.invalidOperand
+            }
             return expressions[1]
         default:
             internalError(token: op)

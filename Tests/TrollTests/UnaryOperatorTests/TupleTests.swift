@@ -48,4 +48,32 @@ final class TupleTests: XCTestCase {
             check(testCase)
         }
     }
+
+    func testTupleConstruction() {
+        [
+            TestCase("[1, 2]", .tuple([.collection([1]), .collection([2])])),
+            TestCase("[5]",    .tuple([.collection([5])])),
+        ]
+        .forEach { testCase in
+            check(testCase)
+        }
+    }
+
+    func testFirstOnEmptyTuple() {
+        guard let expr = buildAST(for: "%1 []") else { return }
+        guard case .failure(let reason) = evaluate(expr) else {
+            XCTFail("Expected `evaluate` to fail on %1 of empty tuple.")
+            return
+        }
+        XCTAssertEqual(reason, .invalidOperand)
+    }
+
+    func testSecondOnSingleElementTuple() {
+        guard let expr = buildAST(for: "%2 [7]") else { return }
+        guard case .failure(let reason) = evaluate(expr) else {
+            XCTFail("Expected `evaluate` to fail on %2 of single-element tuple.")
+            return
+        }
+        XCTAssertEqual(reason, .invalidOperand)
+    }
 }

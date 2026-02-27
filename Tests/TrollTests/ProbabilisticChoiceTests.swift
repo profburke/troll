@@ -47,6 +47,18 @@ final class ProbabilisticChoiceTests: XCTestCase {
         }
     }
 
+    func testPCOperatorRejectsUpperBound() {
+        // ?1.0 cannot be written in source (the scanner only accepts 0.xxx reals),
+        // so we construct the AST node directly to exercise the runtime guard.
+        let op = Token(type: .question, lexeme: "?", literal: .none, line: 0, position: 0)
+        let expr = Unary(op: op, right: Literal(value: .double(1.0)), operandSchema: .double)
+        guard case .failure(let err) = evaluate(expr) else {
+            XCTFail("?1.0 should fail — upper bound of the open interval must be rejected.")
+            return
+        }
+        XCTAssertEqual(err, .needsReal)
+    }
+
     func testPCOperatorReturnsEitherSingletonOneOrEmptyCollection() {
         (0..<1000).forEach { _ in
             // NOTE: The probabilistic choice operator requires its argument to

@@ -257,8 +257,16 @@ extension Binary {
         case .times:
             return .collection([l * r])
         case .divide:
+            guard r != 0 else {
+                reportError(op, "Division by zero.")
+                throw RuntimeError.invalidOperand
+            }
             return .collection([l / r])
         case .mod:
+            guard r != 0 else {
+                reportError(op, "Modulo by zero.")
+                throw RuntimeError.invalidOperand
+            }
             return .collection([l % r])
         default:
             internalError(token: op)
